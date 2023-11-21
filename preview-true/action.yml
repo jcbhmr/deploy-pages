@@ -29,18 +29,8 @@ inputs:
 
 outputs:
   page_url:
-    value: |
-      ${{ steps.preview-false.outputs.page_url || steps.preview-true.outputs.page_url }}
     description: 'URL to deployed GitHub Pages'
 
 runs:
-  using: composite
-  steps:
-    - if: "!inputs.preview"
-      id: preview-false
-      uses: actions/deploy-pages@9dbe3824824f8a1377b8e298bafde1a50ede43e5
-      with: ${{ inputs }}
-    - if: inputs.preview
-      id: preview-true
-      uses: ./preview-true
-      with: ${{ inputs }}
+  using: node20
+  main: ../dist/main.js
