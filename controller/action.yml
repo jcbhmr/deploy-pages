@@ -1,0 +1,6 @@
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@whatever
+    - uses: ./download-pages-artifact
+    - uses: actions/deploy-pages@whatever

@@ -1,6 +1,10 @@
 name: 'Deploy GitHub Pages site'
 description: 'A GitHub Action to deploy an artifact as a GitHub Pages site'
 
+branding:
+  icon:
+  color:
+
 inputs:
   token:
     description: 'GitHub token'
