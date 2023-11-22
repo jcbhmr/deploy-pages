@@ -5,16 +5,9 @@ set -e
 protocol=$(echo "$GITHUB_SERVER_URL" | cut -d/ -f1)
 host=$(echo "$GITHUB_SERVER_URL" | cut -d/ -f3)
 git clone "$protocol//x:$INPUT_TOKEN@$host/$GITHUB_REPOSITORY.git" \
-  "$RUNNER_TEMP/gh-pages" --depth 1
+  "$RUNNER_TEMP/gh-pages" --depth 1 --branch gh-pages
 
 pushd "$RUNNER_TEMP/gh-pages"
-
-if git show-ref --quiet refs/heads/gh-pages; then
-  git checkout gh-pages
-else
-  git checkout --orphan gh-pages
-  git rm -rf .
-fi
 
 if [[ $INPUT_PREVIEW == true ]]; then
   rsync -av --delete --exclude=.git --exclude=.github "$PAGESDATA" "./preview-$GITHUB_RUN_ID/"
