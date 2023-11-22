@@ -26,7 +26,7 @@ git config --local user.email "github-actions[bot]@github.com"
 git add --all --force
 git commit --allow-empty --message "Deploy pages"
 
-find . -name 'preview-*' -ctime +90 -exec rm -rf {} \;
+find . -maxdepth 1 -type d -name 'preview-*' -exec sh -c 'git log -n 1 --format="%ct" -- "{}" | xargs -I{} test "$(date +%s)" -gt "{}" + 90*24*60*60' \; -exec rm -rf {} \;
 
 git add --all --force
 git commit --allow-empty --message "Remove old previews"
