@@ -12,9 +12,9 @@ pushd "$RUNNER_TEMP/gh-pages"
 ls "$PAGESDATA"
 
 if [[ $INPUT_PREVIEW == true ]]; then
-  rsync -av --delete --exclude=.git --exclude=.github "$PAGESDATA" "./preview-$GITHUB_RUN_ID/"
+  rsync -av --delete --exclude=.git --exclude=.github "$PAGESDATA/" "./preview-$GITHUB_RUN_ID/"
 else
-  rsync -av --delete --exclude=.git --exclude=.github --exclude='preview-*' "$PAGESDATA" "./"
+  rsync -av --delete --exclude=.git --exclude=.github --exclude='preview-*' "$PAGESDATA/" "./"
 fi
 rm -rf "$PAGESDATA"
 
