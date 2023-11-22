@@ -1,124 +1,60 @@
-# deploy-pages 🚀
+# Deploy to GitHub Pages with preview support
 
-[![Release](https://img.shields.io/github/v/release/actions/deploy-pages?label=Release&logo=github)](https://github.com/actions/deploy-pages/releases/latest) [![Linting](https://img.shields.io/github/actions/workflow/status/actions/deploy-pages/check-linter.yml?label=Linting&logo=github)](https://github.com/actions/deploy-pages/actions/workflows/check-linter.yml) [![Formatting](https://img.shields.io/github/actions/workflow/status/actions/deploy-pages/check-formatting.yml?label=Formatting&logo=github)](https://github.com/actions/deploy-pages/actions/workflows/check-formatting.yml) [![Tests](https://img.shields.io/github/actions/workflow/status/actions/deploy-pages/test.yml?label=Tests&logo=github)](https://github.com/actions/deploy-pages/actions/workflows/test.yml) ![Coverage](./coverage_badge.svg) [![Distributables](https://img.shields.io/github/actions/workflow/status/actions/deploy-pages/check-dist.yml?label=Distributables&logo=github)](https://github.com/actions/deploy-pages/actions/workflows/check-dist.yml) [![CodeQL](https://img.shields.io/github/actions/workflow/status/actions/deploy-pages/codeql-analysis.yml?label=CodeQL&logo=github)](https://github.com/actions/deploy-pages/actions/workflows/codeql-analysis.yml)
+🔮 Like [actions/deploy-pages] but with actual preview support
 
-This action is used to deploy [Actions artifacts][artifacts] to [GitHub Pages](https://pages.github.com/).
+<p align=center>
+  <img src="">
+</p>
+
+📁 Uses the `gh-pages` branch deployment technique \
+🔓 **Does not** provide origin isolation for previews \
+📚 Great for documentation websites \
+🧪 Perfect to give first-time contributors a preview \
+
+ℹ If you're waiting for official support, make sure you follow these Discussions & Issues:
+
+- [[GitHub Pages] Deploy preview option for PRs · community · Discussion #7730](https://github.com/orgs/community/discussions/7730)
+- [`preview` timeline? · Issue #180 · actions/deploy-pages](https://github.com/actions/deploy-pages/issues/180)
+- [Add support for generating `preview: true` deployment environment URLs? 🧪 · Issue #92 · actions/configure-pages](https://github.com/actions/configure-pages/issues/92)
+
 
 ## Usage
 
-See [action.yml](action.yml) for the various `inputs` this action supports.
+The easiest way to get started is to replace any instances of [actions/deploy-pages] with [jcbhmr/deploy-pages-with-preview-support] and [actions/configure-pages] with [jcbhmr/configure-pages-with-preview-support]. Here's an example workflow of what you might use with an npm-based web project:
 
-For examples that make use of this action, check out our [starter-workflows][starter-workflows] in a variety of frameworks.
-
-This action expects an artifact named `github-pages` to have been created prior to execution. This is done automatically when using [`actions/upload-pages-artifact`][upload-pages-artifact].
-
-We recommend this action to be used in a dedicated job:
-
-```yaml
+```yml
+# .github/workflows/deploy-pages.yml
+name: deploy-pages
+on:
+  push:
+    branches: "main"
+  pull_request:
 jobs:
-  # Build job
-  build:
-    # <Not provided for brevity>
-    # At a minimum this job should upload artifacts using actions/upload-pages-artifact
-
-  # Deploy job
-  deploy:
-    # Add a dependency to the build job
-    needs: build
-
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+  deploy-pages:
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
-
-    # Deploy to the github-pages environment
+      contents: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    # Specify runner + deployment step
+      url: ${{ steps.deploy-pages.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2 # or the latest "vX.X.X" version tag for this action
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "21"
+          cache: npm
+      - run: npm ci
+      - id: configure-pages
+        uses: jcbhmr/configure-pages-with-preview@v2
+      - run: npm run build
+        env:
+          BASE_URL: ${{ steps.configure-pages.outputs.base_url }}/
+      - uses: actions/upload-pages-artifact@v2
+      - id: deploy-pages
+        uses: jcbhmr/deploy-pages-with-preview@v1
 ```
 
-### Inputs 📥
+You can still deploy to your site normally.
 
-| Input | Required? | Default | Description |
-| ----- | --------- | ------- | ----------- |
-| `token` | `true` | `${{ github.token }}` | The GitHub token used to create an authenticated client - Provided for you by default! |
-| `timeout` | `false` | `"600000"` | Time in milliseconds after which to timeout and cancel the deployment (default: 10 minutes) |
-| `error_count` | `false` | `"10"` | Maximum number of status report errors before cancelling a deployment (default: 10) |
-| `reporting_interval` | `false` | `"5000"` | Time in milliseconds between two deployment status report (default: 5 seconds) |
-| `artifact_name` | `false` | `"github-pages"` | The name of the artifact to deploy |
-| `preview` | `false` | `"false"` | Is this attempting to deploy a pull request as a GitHub Pages preview site? (NOTE: This feature is only in alpha currently and is not available to the public!) |
+ℹ Make sure that your GitHub Pages setting is set to use the `gh-pages` branch as a deployment source instead of GitHub Actions. We use the `gh-pages` branch instead of via GitHub Actions so that we can retain the deployment state without it expiring like workflow run artifacts do.
 
-### Outputs 📤
-
-| Output | Description |
-| ------ | ----------- |
-| `page_url` | The URL of the deployed Pages site |
-
-### Environment Variables 🌎
-
-| Variable | Description |
-| -------- | ----------- |
-| `GITHUB_PAGES` | This environment variable is created and set to the string value `"true"` so that framework build tools may choose to differentiate their output based on the intended target hosting platform. |
-
-## Security Considerations
-
-There are a few important considerations to be aware of:
-
-1. The artifact being deployed must have been uploaded in a previous step, either in the same job or a separate job that doesn't execute until the upload is complete.
-
-2. The job that executes the deployment must at minimum have the following permissions:
-   - `pages: write`
-   - `id-token: write`
-
-3. The deployment should target the `github-pages` environment (you may use a different environment name if needed, but this is not recommended.)
-
-4. If your Pages site is using a source branch, the deployment must originate from this source branch unless [your environment is protected][environment-protection] in which case the environment protection rules take precedence over the source branch rule
-
-5. If your Pages site is using GitHub Actions as the source, while not required we highly recommend you also [protect your environment][environment-protection] (we will configure it by default for you).
-
-## Compatibility
-
-This action is primarily design for use with GitHub.com's Actions workflows and Pages deployments. However, certain releases should also be compatible with GitHub Enterprise Server (GHES) `3.7` and above.
-
-| Release | GHES Compatibility |
-|:---|:---|
-| [`v2`](https://github.com/actions/deploy-pages/releases/tag/v2) | `>= 3.9` |
-| `v2.x.x` | `>= 3.9` |
-| [`v1`](https://github.com/actions/deploy-pages/releases/tag/v1) | `>= 3.7` |
-| [`v1.2.8`](https://github.com/actions/deploy-pages/releases/tag/v1.2.8) | `>= 3.7` |
-| [`v1.2.7`](https://github.com/actions/deploy-pages/releases/tag/v1.2.7) | :warning: `>= 3.9` [Incompatible with prior versions!](https://github.com/actions/deploy-pages/issues/137) |
-| [`v1.2.6`](https://github.com/actions/deploy-pages/releases/tag/v1.2.6) | `>= 3.7` |
-| `v1.x.x` | `>= 3.7` |
-
-## Release Instructions
-
-In order to release a new version of this Action:
-
-1. Locate the semantic version of the [upcoming release][release-list] (a draft is maintained by the [`draft-release` workflow][draft-release]).
-
-2. Publish the draft release from the `main` branch with semantic version as the tag name, _with_ the checkbox to publish to the GitHub Marketplace checked. :ballot_box_with_check:
-
-3. After publishing the release, the [`release` workflow][release] will automatically run to create/update the corresponding the major version tag such as `v1`.
-
-   ⚠️ Environment approval is required. Check the [Release workflow run list][release-workflow-runs].
-
-## License
-
-The scripts and documentation in this project are released under the [MIT License](LICENSE).
-
-<!-- references -->
-[starter-workflows]: https://github.com/actions/starter-workflows/tree/main/pages
-[upload-pages-artifact]: https://github.com/actions/upload-pages-artifact
-[artifacts]: https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts
-[environment-protection]: https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#environment-protection-rules
-[release-list]: https://github.com/actions/deploy-pages/releases
-[draft-release]: .github/workflows/draft-release.yml
-[release]: .github/workflows/release.yml
-[release-workflow-runs]: https://github.com/actions/deploy-pages/actions/workflows/release.yml

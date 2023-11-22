@@ -10,18 +10,9 @@ inputs:
     description: 'GitHub token'
     default: ${{ github.token }}
     required: true
-  timeout:
-    description: 'Time in milliseconds after which to timeout and cancel the deployment (default: 10 minutes)'
-    required: false
-    default: '600000'
-  error_count:
-    description: 'Maximum number of status report errors before cancelling a deployment (default: 10)'
-    required: false
-    default: '10'
-  reporting_interval:
-    description: 'Time in milliseconds between two deployment status report (default: 5 seconds)'
-    required: false
-    default: '5000'
+  timeout: {}
+  error_count: {}
+  reporting_interval: {}
   artifact_name:
     description: 'Name of the artifact to deploy'
     required: false
@@ -29,22 +20,25 @@ inputs:
   preview:
     description: 'Is this attempting to deploy a pull request as a GitHub Pages preview site? (NOTE: This feature is only in alpha currently and is not available to the public!)'
     required: false
-    default: ${{ github.event_name == 'pull_request' }}
+    default: ${{ !(github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master')) }}
 
 outputs:
   page_url:
-    value: |
-      ${{ steps.preview-false.outputs.page_url || steps.preview-true.outputs.page_url }}
+    value: ${{ steps.main.outputs.page_url }}
     description: 'URL to deployed GitHub Pages'
 
 runs:
   using: composite
   steps:
-    - if: "!inputs.preview"
-      id: preview-false
-      uses: actions/deploy-pages@9dbe3824824f8a1377b8e298bafde1a50ede43e5
-      with: ${{ inputs }}
-    - if: inputs.preview
-      id: preview-true
-      uses: ./preview-true
-      with: ${{ inputs }}
+    - uses: actions4gh/download-pages-artifact@main
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: ${{ runner.temp }}/pagesdata
+    - id: main
+      shell: bash
+      run: bash "$GITHUB_ACTION_PATH/main.sh"
+      env:
+        PAGESDATA: ${{ runner.temp }}/pagesdata
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_PREVIEW: ${{ inputs.preview }}
+    
