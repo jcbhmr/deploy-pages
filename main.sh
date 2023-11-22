@@ -2,9 +2,9 @@
 set -e
 [[ $RUNNER_DEBUG != 1 ]] || set -x
 
-protocol=$(echo "$GITHUB_SERVER_URL" | cut -d/ -f3)
+protocol=$(echo "$GITHUB_SERVER_URL" | cut -d/ -f1)
 host=$(echo "$GITHUB_SERVER_URL" | cut -d/ -f3)
-git clone "$scheme//x:$INPUT_TOKEN@$host/$GITHUB_REPOSITORY.git" \
+git clone "$protocol//x:$INPUT_TOKEN@$host/$GITHUB_REPOSITORY.git" \
   "$RUNNER_TEMP/gh-pages" --depth 1 --branch gh-pages
 
 pushd "$RUNNER_TEMP/gh-pages"
