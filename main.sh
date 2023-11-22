@@ -20,8 +20,8 @@ rm -rf "$PAGESDATA"
 
 touch .nojekyll
 
-git config --local author.name "github-actions[bot]"
-git config --local author.email "github-actions[bot]@github.com"
+git config --local user.name "github-actions[bot]"
+git config --local user.email "github-actions[bot]@github.com"
 
 git add --all --force
 git commit --allow-empty --message "Deploy pages"
