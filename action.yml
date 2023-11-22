@@ -1,5 +1,5 @@
-name: 'Deploy GitHub Pages site'
-description: 'A GitHub Action to deploy an artifact as a GitHub Pages site'
+name: Deploy to GitHub Pages with preview support
+description: 🔮 Like actions/deploy-pages but with actual preview support
 
 branding:
   icon:

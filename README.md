@@ -11,16 +11,19 @@
 📚 Great for documentation websites \
 🧪 Perfect to give first-time contributors a preview \
 
-ℹ If you're waiting for official support, make sure you follow these Discussions & Issues:
+ℹ If you're waiting for official support, make sure you follow these
+Discussions & Issues:
 
 - [[GitHub Pages] Deploy preview option for PRs · community · Discussion #7730](https://github.com/orgs/community/discussions/7730)
 - [`preview` timeline? · Issue #180 · actions/deploy-pages](https://github.com/actions/deploy-pages/issues/180)
 - [Add support for generating `preview: true` deployment environment URLs? 🧪 · Issue #92 · actions/configure-pages](https://github.com/actions/configure-pages/issues/92)
 
-
 ## Usage
 
-The easiest way to get started is to replace any instances of [actions/deploy-pages] with [jcbhmr/deploy-pages-with-preview-support] and [actions/configure-pages] with [jcbhmr/configure-pages-with-preview-support]. Here's an example workflow of what you might use with an npm-based web project:
+The easiest way to get started is to replace any instances of
+[actions/deploy-pages] with [jcbhmr/deploy-pages-with-preview-support] and
+[actions/configure-pages] with [jcbhmr/configure-pages-with-preview-support].
+Here's an example workflow of what you might use with an npm-based web project:
 
 ```yml
 # .github/workflows/deploy-pages.yml
@@ -56,5 +59,7 @@ jobs:
 
 You can still deploy to your site normally.
 
-ℹ Make sure that your GitHub Pages setting is set to use the `gh-pages` branch as a deployment source instead of GitHub Actions. We use the `gh-pages` branch instead of via GitHub Actions so that we can retain the deployment state without it expiring like workflow run artifacts do.
-
+ℹ Make sure that your GitHub Pages setting is set to use the `gh-pages` branch
+as a deployment source instead of GitHub Actions. We use the `gh-pages` branch
+instead of via GitHub Actions so that we can retain the deployment state without
+it expiring like workflow run artifacts do.
