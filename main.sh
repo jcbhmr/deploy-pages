@@ -9,7 +9,10 @@ git clone "$protocol//x:$INPUT_TOKEN@$host/$GITHUB_REPOSITORY.git" \
 
 pushd "$RUNNER_TEMP/gh-pages"
 
-git switch gh-pages 2>/dev/null || git switch -c gh-pages
+if ! git switch gh-pages; then
+  git checkout --orphan gh-pages
+  git reset --hard
+fi
 
 if [[ $INPUT_PREVIEW == true ]]; then
   rsync -av --delete --exclude=.git --exclude=.github "$PAGESDATA" "./preview-$GITHUB_RUN_ID/"
