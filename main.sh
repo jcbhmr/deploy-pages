@@ -9,10 +9,11 @@ git clone "$protocol//x:$INPUT_TOKEN@$host/$GITHUB_REPOSITORY.git" \
 
 pushd "$RUNNER_TEMP/gh-pages"
 
-git fetch origin gh-pages || true
-if ! git switch gh-pages; then
+if git show-ref --quiet refs/heads/gh-pages; then
+  git checkout gh-pages
+else
   git checkout --orphan gh-pages
-  git reset --hard
+  git rm -rf .
 fi
 
 if [[ $INPUT_PREVIEW == true ]]; then
